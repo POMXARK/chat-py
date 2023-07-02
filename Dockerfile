@@ -1,31 +1,24 @@
-FROM python:3.10.1-slim-bullseye
+# multiple stage build
 
-ENV PYTHONUNBUFFERED 1
+FROM python:3.10.1 as base
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV DOCKER_BUILDKIT=1
 WORKDIR /build
 
-# Create venv, add it to path and install requirements
-RUN python -m venv /venv
-ENV PATH="/venv/bin:$PATH"
+FROM base as poetry
+RUN pip install poetry==1.5.1
+COPY poetry.lock pyproject.toml /build/
+RUN poetry export -o requirements.txt
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+FROM base as build
+COPY --from=poetry /build/requirements.txt /tmp/requirements.txt
+RUN python -m venv .venv && \
+    .venv/bin/pip install 'wheel==0.36.2' && \
+    .venv/bin/pip install -r /tmp/requirements.txt
 
-# Install uvicorn server
-RUN pip install uvicorn[standard]
-
-# Copy the rest of app
-COPY app app
-COPY alembic alembic
-COPY alembic.ini .
-COPY pyproject.toml .
-COPY init.sh .
-
-# Create new user to run app process as unprivilaged user
-RUN addgroup --gid 1001 --system uvicorn && \
-    adduser --gid 1001 --shell /bin/false --disabled-password --uid 1001 uvicorn
-
-# Run init.sh script then start uvicorn
-RUN chown -R uvicorn:uvicorn /build
-CMD bash init.sh && \
-    runuser -u uvicorn -- /venv/bin/uvicorn app.main:app --app-dir /build --host 0.0.0.0 --port 8000 --workers 2 --loop uvloop
-EXPOSE 8000
+FROM python:3.10.1-slim as runtime
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /build
+ENV PATH=/build/.venv/bin:$PATH
+COPY --from=build /build/.venv /build/.venv
+COPY . /build

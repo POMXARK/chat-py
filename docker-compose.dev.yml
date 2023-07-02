@@ -14,7 +14,7 @@ services:
     env_file:
       - .env
     environment:
-      - POSTGRES_DB=${DEFAULT_DATABASFE_DB}
+      - POSTGRES_DB=${DEFAULT_DATABASE_DB}
       - POSTGRES_USER=${DEFAULT_DATABASE_USER}
       - POSTGRES_PASSWORD=${DEFAULT_DATABASE_PASSWORD}
   web:
@@ -24,13 +24,14 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    command: bash -c "gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
     env_file:
       - .env
     environment:
       - DEFAULT_DATABASE_HOSTNAME=postgres
       - DEFAULT_DATABASE_PORT=5432
     ports:
-      - 80:8000
+      - 8090:8000
 
 volumes:
   postgres_data:
