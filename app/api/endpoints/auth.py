@@ -13,6 +13,10 @@ from app.models import User
 from app.schemas.requests import RefreshTokenRequest
 from app.schemas.responses import AccessTokenResponse
 
+from . import chat # test import
+
+chat.get_chat(0)
+
 router = APIRouter()
 
 

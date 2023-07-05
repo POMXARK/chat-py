@@ -1,5 +1,11 @@
 """Main FastAPI app instance declaration."""
 
+import sys
+
+print(sys.path)
+
+sys.path.append("/home/roman/PhpstormProjects/chat-py/app/api/endpoints")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
