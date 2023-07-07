@@ -1,9 +1,8 @@
 from uuid import UUID
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
 from app.models import Message
 from app.api import deps
 from pydantic import BaseModel
@@ -35,14 +34,20 @@ async def chat(
         await db.commit()
     except Exception as e:
         return e
-    # await db.refresh(_message)
+
     return _message
 
 
-@router.get('/load/{chatId}')
-async def get_chat(chatId: int, db: AsyncSession = Depends(deps.get_session), ):
-    chat = (await db.scalars(select(Message).where(Message.id == chatId))).one()
-    if not chat:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"No note with this id: {id} found")
-    return chat
+@router.get('/load')
+async def get_chat(stmt: UUID = None, from_: UUID = None, to: UUID = None, db: AsyncSession = Depends(deps.get_session)):
+    query = select(Message)
+    if stmt is not None:
+        query = query.where(Message.stmt_id == stmt)
+    if from_ is not None:
+        query = query.where(Message.from_user_id == from_)
+    if to is not None:
+        query = query.where(Message.to_user_id == to)
+
+    res = (await db.scalars(query)).all()
+    test = jsonable_encoder(res[0])
+    return res
