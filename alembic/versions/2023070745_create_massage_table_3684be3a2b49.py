@@ -1,16 +1,16 @@
 """create massage table
 
-Revision ID: 3f3b937878ab
+Revision ID: 3684be3a2b49
 Revises: 07c71f4389b6
-Create Date: 2023-07-05 13:41:33.776050
+Create Date: 2023-07-07 18:45:56.289781
 
 """
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "3f3b937878ab"
+revision = "3684be3a2b49"
 down_revision = "07c71f4389b6"
 branch_labels = None
 depends_on = None
@@ -34,11 +34,11 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("text", sa.TEXT(), nullable=False),
-        sa.Column("from_user_id", sa.UUID(), nullable=False),
-        sa.Column("to_user_id", sa.UUID(), nullable=False),
+        sa.Column("user_id", sa.UUID(), nullable=False),
         sa.Column("stmt_id", sa.UUID(), nullable=False),
         sa.Column("read_at", sa.TIMESTAMP(timezone=True), nullable=True),
         sa.Column("read_by", sa.TIMESTAMP(timezone=True), nullable=True),
+        sa.Column("file_path", postgresql.JSON(astext_type=sa.Text()), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     # ### end Alembic commands ###

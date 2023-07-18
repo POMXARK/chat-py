@@ -15,7 +15,7 @@ from app.schemas.responses import AccessTokenResponse
 
 from . import chat # test import
 
-chat.get_chat(0)
+chat.get_chat()
 
 router = APIRouter()
 

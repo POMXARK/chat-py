@@ -1,4 +1,6 @@
-from pydantic import BaseModel, EmailStr
+import uuid
+
+from pydantic import BaseModel, EmailStr, UUID4
 
 
 class BaseRequest(BaseModel):
@@ -17,3 +19,9 @@ class UserUpdatePasswordRequest(BaseRequest):
 class UserCreateRequest(BaseRequest):
     email: EmailStr
     password: str
+
+
+class MessageRequest(BaseRequest):
+    text: str
+    user_id: UUID4
+    stmt_id: UUID4
