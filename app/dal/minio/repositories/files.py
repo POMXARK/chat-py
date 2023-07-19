@@ -1,11 +1,9 @@
 import io
-import json
 from uuid import uuid4, UUID
 
 from starlette import status
 from starlette.responses import JSONResponse
 
-import value_objects
 from .abc import MinioRepository
 
 
@@ -41,7 +39,3 @@ class MinioFilesRepository(MinioRepository):
             Fileobj=file_obj,
         )
         return file_obj
-
-    async def delete(self, product_id: value_objects.ProductID, image_id: UUID):  # TODO: Add
-        ...
-        # self.minio_client.products.delete_objects(Key=f"{product_id.product}/{image_id}")

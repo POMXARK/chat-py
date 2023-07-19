@@ -1,14 +1,13 @@
-import json
 from uuid import UUID
 from fastapi import WebSocket, WebSocketDisconnect, Depends
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.encoders import jsonable_encoder
 from app.api.deps import get_session
-from app.models import Message
 
 from aio_pika import connect, Message as pikaMessage, IncomingMessage
 import asyncio
+
+from helpers import generate_links, generate_link
+from repository import MessageRepository
 
 
 async def websocket_endpoint(websocket: WebSocket):
@@ -70,66 +69,22 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-def generate_links(stmt_id, messages, websocket):
-    _list = []
-    for message in messages:
-        _message = jsonable_encoder(message)
-
-        _files = []
-        if isinstance(_message['file_path'], list):
-            for _file in _message['file_path']:
-                _files.append(
-                    f"{websocket.base_url.netloc}/chat/download?stmt_id={stmt_id}&user_id={_message['user_id']}&file_id={_file['file_id']}&name={_file['name']}")
-
-        _message['file_path'] = _files
-        _list.append(_message)
-
-    return json.dumps(_list)
-
-
-def generate_link(stmt_id, message, websocket):
-    _message = jsonable_encoder(message)
-
-    _files = []
-    if isinstance(_message['file_path'], list):
-        for _file in _message['file_path']:
-            _files.append(
-                f"{websocket.base_url.netloc}/chat/download?stmt_id={stmt_id}&user_id={_message['user_id']}&file_id={_file['file_id']}&name={_file['name']}")
-
-    _message['file_path'] = _files
-    _list = []
-    _list.append(_message)
-
-    return json.dumps(_list)
-
-
-async def load(websocket: WebSocket, stmt_id: UUID, db: AsyncSession = Depends(get_session)):
+async def load(websocket: WebSocket, stmt_id: UUID,
+               db: AsyncSession = Depends(get_session)
+               ):
     await manager.connect(websocket)
-
+    _db = MessageRepository(db)
     try:
-        query = select(Message).where(Message.stmt_id == stmt_id)
-        messages = (await db.scalars(query)).all()
-
-        await manager.send_personal_message(f"{generate_links(stmt_id, messages, websocket)}", websocket)
+        messages = await _db.find_messages_by_stmt(stmt_id)
+        await manager.send_personal_message(f"{generate_links(stmt_id, messages, websocket.base_url.netloc)}", websocket)
 
         while True:
             await manager.setup("hello")
             data = await websocket.receive_json()
+            await _db.add_one(data, stmt_id)
 
-            _message = Message(
-                text=data['text'],
-                stmt_id=stmt_id,
-                user_id=data['user_id'],
-                file_path=data['file_path']
-            )
-            db.add(_message)
-            try:
-                await db.commit()
-            except Exception as e:
-                                                                                                                                                                                                                                                                                                                return e
-
-                                                                                                                                                                                                                                                                                                            # await manager.send_personal_message(f"You wrote: {data}", websocket)
-                                                                                                                                                                                                                                                                                                            await manager.broadcast(f"{generate_link(stmt_id, data, websocket)}")
-                                                                                                                                                                                                                                                                                                    except WebSocketDisconnect:
-                                                                                                                                                                                                                                                                                                        manager.disconnect(websocket)
-                                                                                                                                                                                                                                                                                                        await manager.broadcast(f"Client #{stmt_id} left the chat")
+            # await manager.send_personal_message(f"You wrote: {data}", websocket)
+            await manager.broadcast(f"{generate_link(stmt_id, data, websocket.base_url.netloc)}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        await manager.broadcast(f"Client #{stmt_id} left the chat")
