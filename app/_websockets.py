@@ -1,13 +1,20 @@
+import json
+
 from uuid import UUID
 from fastapi import WebSocket, WebSocketDisconnect, Depends
+from fastapi.params import Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.deps import get_session
 
 from aio_pika import connect, Message as pikaMessage, IncomingMessage
-import asyncio
 
 from helpers import generate_links, generate_link
 from repository import MessageRepository
+
+import asyncio
+
+import auth
 
 
 async def websocket_endpoint(websocket: WebSocket):
@@ -42,7 +49,7 @@ class ConnectionManager:
 
     async def _notify(self, message: IncomingMessage):
         for connection in self.active_connections:
-            await connection.send_text(f"{message.body}")
+            await connection.send_text(f"{json.loads(message.body)}")
         # living_connections = []
         # _websocket = self.active_connections
         # while len(_websocket) > 0:
@@ -69,18 +76,45 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+# async def auth():
+#
+#     async with aiohttp.ClientSession() as session:
+#
+#         pokemon_url = 'http://10.0.54.6:8007/auth/signup'
+#         async with session.post(pokemon_url) as resp:
+#             pokemon = await resp.json()
+#             print(pokemon)
+
+def get_current_user():
+    return []
+
+
+# async def get_cookie_or_token(
+#     websocket: WebSocket,
+#     session: Annotated[str | None, Cookie()] = None,
+#     token: Annotated[str | None, Query()] = None,
+# ):
+#     if session is None and token is None:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+#     return session or token
+
 async def load(websocket: WebSocket, stmt_id: UUID,
-               db: AsyncSession = Depends(get_session)
+               db: AsyncSession = Depends(get_session),
+               access_token=Cookie(...)
                ):
+    auth.get_current_user(access_token)
+
     await manager.connect(websocket)
     _db = MessageRepository(db)
     try:
         messages = await _db.find_messages_by_stmt(stmt_id)
-        await manager.send_personal_message(f"{generate_links(stmt_id, messages, websocket.base_url.netloc)}", websocket)
+        await manager.send_personal_message(f"{generate_links(stmt_id, messages, websocket.base_url.netloc)}",
+                                            websocket)
 
         while True:
             await manager.setup("hello")
             data = await websocket.receive_json()
+            print(data)
             await _db.add_one(data, stmt_id)
 
             # await manager.send_personal_message(f"You wrote: {data}", websocket)

@@ -1,70 +1,129 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat</h1>
-        <ul>
-            response: /download?user_id=3fa85f64-5717-4562-b3fc-2c963f66afa6&file_id=51cf08e1-eff0-4691-84b7-b74ac6c5cc4a&name=test
-        </ul>
-        <ul>
-             example message: {"text": "test message", "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "file_path": [{ "name": "test", "file_id": "cecd86db-c979-4214-9e59-ec3c0429b7e9" }]}
-        </ul>
-        <form action="" onsubmit="sendMessage(event)" method="post" enctype="multipart/form-data">
-            <label>Stmt ID: <input type="text" id="itemId" autocomplete="off" value="3fa85f64-5717-4562-b3fc-2c963f66afa6"/></label>
-            <label>Token: <input type="text" id="token" autocomplete="off" value=""/></label>
-            <button onclick="connect(event)">Connect</button>
-            <hr>
-            <label>Message: <input type="text" id="messageText" autocomplete="off"/></label>
+<head>
+    <title>Chat</title>
+</head>
 
-            <input id="file" name="file" type="file"/>
-            <button>Send</button>
-        </form>
+<!-- Button to open the modal login form -->
+
+<form class="modal-content animate">
+    <div class="container">
+        <label for="uname"><b>Username</b></label>
+        <input type="text" placeholder="Enter Username" name="login" value="test_customer" required>
+
+        <label for="psw"><b>Password</b></label>
+        <input type="password" placeholder="Enter Password" name="password" value="12345678" required>
+
+        <button type="submit">Login</button>
+
+    </div>
+</form>
+
+<body>
+<h1>WebSocket Chat</h1>
+<ul>
+    response:
+    /download?user_id=3fa85f64-5717-4562-b3fc-2c963f66afa6&file_id=51cf08e1-eff0-4691-84b7-b74ac6c5cc4a&name=test
+</ul>
+<ul>
+    example message: {"text": "test message", "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "file_path": [{ "name":
+    "test", "file_id": "cecd86db-c979-4214-9e59-ec3c0429b7e9" }]}
+</ul>
+<form action="" onsubmit="sendMessage(event)" method="post" enctype="multipart/form-data">
+    <label>Stmt ID: <input type="text" id="itemId" autocomplete="off"
+                           value="3fa85f64-5717-4562-b3fc-2c963f66afa6"/></label>
+    <label>Token: <input type="text" id="token" autocomplete="off" value=""/></label>
+    <button onclick="connect(event)">Connect</button>
+    <hr>
+    <label>Message: <input type="text" id="messageText" autocomplete="off"/></label>
+
+    <input id="file" name="file" type="file"/>
+    <button>Send</button>
+</form>
 
 
-        <ul id='messages'>
-        </ul>
-        <script>
-        var ws = null;
-            function connect(event) {
-                var itemId = document.getElementById("itemId")
-                var token = document.getElementById("token")
-                ws = new WebSocket("ws://localhost:8090/ws/" + itemId.value);
-                ws.onmessage = function(event) {
-                    var messages = document.getElementById('messages')
-                    var message = document.createElement('div')
+<ul id='messages'>
+</ul>
+<script>
 
-                    console.log(event.data)
+    async function handleSubmit(event) {
+      event.preventDefault();
 
-                    try {
-                        JSON.parse(event.data).forEach((element) => {
-                            var _message = document.createElement('div')
-                            var _content = document.createTextNode(JSON.stringify(element))
-                            var _br = document.createElement('br')
-                            _message.appendChild(_br)
-                            _message.appendChild(_content)
-                            message.appendChild(_message)
-                        })
-                    } catch (e) {
-                            var _message = document.createElement('div')
-                            var _content = document.createTextNode(JSON.stringify(event.data))
-                            var _br = document.createElement('br')
-                            _message.appendChild(_br)
-                            _message.appendChild(_content)
-                            message.appendChild(_message)
-                    }
+      const data = new FormData(event.target);
 
-                    messages.appendChild(message)
-                };
-                event.preventDefault()
+      const login = data.get('login');
+      const password = data.get('password');
+
+      console.log({ login, password });
+
+      const url = 'http://10.0.54.6:8007/auth/signin';
+
+
+    try {
+      const response =  await fetch(url, {
+        method: 'POST', // или 'PUT'
+        body: JSON.stringify({ login, password }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+          const json = await response.json();
+      console.log('200:', JSON.stringify(json));
+      var token = document.getElementById("token")
+
+      token.value = json.data.access_token
+      document.cookie = "access_token=" + json.data.access_token + "; path=/";
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
+    }
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', handleSubmit);
+
+    var ws = null;
+
+    function connect(event) {
+        var itemId = document.getElementById("itemId")
+        var token = document.getElementById("token")
+        ws = new WebSocket("ws://localhost:8090/ws/" + itemId.value);
+        ws.onmessage = function (event) {
+            var messages = document.getElementById('messages')
+            var message = document.createElement('div')
+
+            console.log(event.data)
+
+            try {
+                JSON.parse(event.data).forEach((element) => {
+                    var _message = document.createElement('div')
+                    var _content = document.createTextNode(JSON.stringify(element))
+                    var _br = document.createElement('br')
+                    _message.appendChild(_br)
+                    _message.appendChild(_content)
+                    message.appendChild(_message)
+                })
+            } catch (e) {
+                var _message = document.createElement('div')
+                var _content = document.createTextNode(JSON.stringify(event.data))
+                var _br = document.createElement('br')
+                _message.appendChild(_br)
+                _message.appendChild(_content)
+                message.appendChild(_message)
             }
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
-            }
-        </script>
-    </body>
+
+            messages.appendChild(message)
+        };
+        event.preventDefault()
+
+    }
+
+    function sendMessage(event) {
+        var input = document.getElementById("messageText")
+        ws.send(input.value)
+        input.value = ''
+        event.preventDefault()
+    }
+</script>
+</body>
 </html>
