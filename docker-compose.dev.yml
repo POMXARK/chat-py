@@ -27,7 +27,7 @@ services:
     build:
       context: ./
       dockerfile: multiple.Dockerfile
-    command: bash -c "alembic upgrade head && gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
+    command: bash -c "alembic upgrade head && gunicorn src.main:src --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
     env_file:
       - .env
     environment:

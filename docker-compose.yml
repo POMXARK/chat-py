@@ -3,7 +3,7 @@ version: "3.7"
 # For local development, only database is running
 #
 # docker-compose up -d
-# uvicorn app.main:app --reload
+# uvicorn src.main:src --reload
 #
 
 services:

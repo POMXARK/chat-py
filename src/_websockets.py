@@ -5,12 +5,12 @@ from fastapi import WebSocket, WebSocketDisconnect, Depends
 from fastapi.params import Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_session
+from src.api.deps import get_session
 
 from aio_pika import connect, Message as pikaMessage, IncomingMessage
 
 from helpers import generate_links, generate_link
-from repository import MessageRepository
+from dal.postgres.repositories.repository import MessageRepository
 
 import asyncio
 

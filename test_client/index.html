@@ -25,17 +25,16 @@
     response:
     /download?user_id=3fa85f64-5717-4562-b3fc-2c963f66afa6&file_id=51cf08e1-eff0-4691-84b7-b74ac6c5cc4a&name=test
 </ul>
-<ul>
-    example message: {"text": "test message", "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "file_path": [{ "name":
-    "test", "file_id": "cecd86db-c979-4214-9e59-ec3c0429b7e9" }]}
-</ul>
+
 <form action="" onsubmit="sendMessage(event)" method="post" enctype="multipart/form-data">
     <label>Stmt ID: <input type="text" id="itemId" autocomplete="off"
                            value="3fa85f64-5717-4562-b3fc-2c963f66afa6"/></label>
     <label>Token: <input type="text" id="token" autocomplete="off" value=""/></label>
     <button onclick="connect(event)">Connect</button>
     <hr>
-    <label>Message: <input type="text" id="messageText" autocomplete="off"/></label>
+    <label>Message: <input type="text" id="messageText" autocomplete="off"
+    value='{"text": "test message", "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "file_path": [{ "name":
+    "test", "file_id": "cecd86db-c979-4214-9e59-ec3c0429b7e9" }]}'/></label>
 
     <input id="file" name="file" type="file"/>
     <button>Send</button>
@@ -56,7 +55,7 @@
 
       console.log({ login, password });
 
-      const url = 'http://10.0.54.6:8007/auth/signin';
+      const url = 'https://authservice.bazar-agro.ru/auth/signin';
 
 
     try {

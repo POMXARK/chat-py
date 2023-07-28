@@ -38,7 +38,7 @@ RUN groupadd -g 999 python && \
 USER 999
 
 # Copy installed packages
-COPY --from=build /app/.venv .venv
+COPY --from=build //.venv .venv
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app"
 # Copy application

@@ -1,8 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_session
-from models import Message
+from dal.postgres.models import Message
 
 
 class PostgresRepository:

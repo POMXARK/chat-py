@@ -2,10 +2,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, UploadFile, File, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models import Message
-from app.api import deps
-from app.dal.minio import MinioFilesRepository
-from app.dal.minio import Buckets, S3Client, MinioSettings
+from dal.postgres.models import Message
+from src.api import deps
+from src.dal.minio import MinioFilesRepository
+from src.dal.minio import Buckets, S3Client, MinioSettings
 
 router = APIRouter()
 

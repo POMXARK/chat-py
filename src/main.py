@@ -1,18 +1,18 @@
-"""Main FastAPI app instance declaration."""
+"""Main FastAPI src instance declaration."""
 from _websockets import websocket_endpoint, load
 
 import sys
 
 print(sys.path)
 
-sys.path.append("/home/roman/PhpstormProjects/chat-py/app/api/endpoints")
+sys.path.append("//api/endpoints")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-from app.api.api import api_router
-from app.core import config
+from src.api.api import api_router
+from src.core import config
 
 app = FastAPI(
     #title=config.settings.PROJECT_NAME,
