@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from dal.postgres.models import Message
-import deps
+from dal.postgres.db import get_session
 from src.dal.minio import MinioFilesRepository
 from src.dal.minio import Buckets, S3Client, MinioSettings
 
@@ -13,7 +13,7 @@ router = APIRouter()
 @router.post('/upload')
 async def upload(user_id: UUID, stmt_id: UUID, name: str,
                     file: UploadFile = File(...),
-                    db: AsyncSession = Depends(deps.get_session)
+                    db: AsyncSession = Depends(get_session)
                  ):
     query = select(Message)#.filter(Message.stmt_id == stmt_id)
     value = (await db.scalars(query)).all()

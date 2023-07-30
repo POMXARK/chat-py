@@ -1,23 +1,12 @@
 from datetime import datetime
 from http import HTTPStatus
 from uuid import UUID
-
-from fastapi import Depends
 from fastapi import HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer
 from jose import jwt, JWTError
 from pydantic import BaseModel, ValidationError
 
-from pydantic import BaseSettings
-
-class WebApiSettings(BaseSettings):
-    jwt_secret: str = "secret"
-    jwt_algorithm: str = "HS256"
-    jwt_expires_h: int = 48
-
-    class Config:
-        env_prefix = "app_"
-
+from config import WebApiSettings
 
 oauth2_scheme = HTTPBearer(auto_error=True)
 

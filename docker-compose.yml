@@ -21,20 +21,6 @@ services:
     ports:
       - "${DEFAULT_DATABASE_PORT}:5432"
 
-  test_database:
-    restart: unless-stopped
-    image: postgres:latest
-    volumes:
-      - test_database_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${TEST_DATABASE_DB}
-      - POSTGRES_USER=${TEST_DATABASE_USER}
-      - POSTGRES_PASSWORD=${TEST_DATABASE_PASSWORD}
-    env_file:
-      - .env
-    ports:
-      - "${TEST_DATABASE_PORT}:5432"
-
 volumes:
   test_database_data:
   default_database_data:

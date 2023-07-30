@@ -1,19 +1,13 @@
 import json
-
 from uuid import UUID
 from fastapi import WebSocket, WebSocketDisconnect, Depends
 from fastapi.params import Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from deps import get_session
-
+from dal.postgres.db import get_session
 from aio_pika import connect, Message as pikaMessage, IncomingMessage
-
 from helpers import generate_links, generate_link
 from dal.postgres.repositories.repository import MessageRepository
-
 import asyncio
-
 import auth
 
 
@@ -39,7 +33,6 @@ class ConnectionManager:
         self.queue_name = queue_name
         queue = await self.channel.declare_queue(self.queue_name)
         await queue.consume(self._notify, no_ack=True)
-        # self.is_ready = True
 
     async def push(self, msg: str):
         await self.channel.default_exchange.publish(
@@ -50,13 +43,6 @@ class ConnectionManager:
     async def _notify(self, message: IncomingMessage):
         for connection in self.active_connections:
             await connection.send_text(f"{json.loads(message.body)}")
-        # living_connections = []
-        # _websocket = self.active_connections
-        # while len(_websocket) > 0:
-        #     _websocket = _websocket.pop()
-        #     await _websocket.send_text(f"{message.body}")
-        #     living_connections.append(_websocket)
-        # self.connections = living_connections
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -76,27 +62,9 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-# async def auth():
-#
-#     async with aiohttp.ClientSession() as session:
-#
-#         pokemon_url = 'http://10.0.54.6:8007/auth/signup'
-#         async with session.post(pokemon_url) as resp:
-#             pokemon = await resp.json()
-#             print(pokemon)
-
 def get_current_user():
     return []
 
-
-# async def get_cookie_or_token(
-#     websocket: WebSocket,
-#     session: Annotated[str | None, Cookie()] = None,
-#     token: Annotated[str | None, Query()] = None,
-# ):
-#     if session is None and token is None:
-#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-#     return session or token
 
 async def load(websocket: WebSocket, stmt_id: UUID,
                db: AsyncSession = Depends(get_session),
@@ -117,7 +85,6 @@ async def load(websocket: WebSocket, stmt_id: UUID,
             print(data)
             await _db.add_one(data, stmt_id)
 
-            # await manager.send_personal_message(f"You wrote: {data}", websocket)
             await manager.broadcast(f"{generate_link(stmt_id, data, websocket.base_url.netloc)}")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
