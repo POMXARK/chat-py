@@ -5,13 +5,13 @@ import sys
 
 print(sys.path)
 
-sys.path.append("//api/endpoints")
+sys.path.append("//api/routers")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-from src.api.api import api_router
+from api import api_router
 from src.core import config
 
 app = FastAPI(

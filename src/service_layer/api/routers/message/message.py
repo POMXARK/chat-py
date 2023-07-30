@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from dal.postgres.models import Message
-from src.api import deps
+import deps
 from src.dal.minio import MinioFilesRepository
 from src.dal.minio import Buckets, S3Client, MinioSettings
 

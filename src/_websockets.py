@@ -5,7 +5,7 @@ from fastapi import WebSocket, WebSocketDisconnect, Depends
 from fastapi.params import Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.deps import get_session
+from deps import get_session
 
 from aio_pika import connect, Message as pikaMessage, IncomingMessage
 
